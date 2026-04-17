@@ -1,0 +1,40 @@
+# Core repo files
+.git/
+.hermes/
+
+# Heavy local workspaces and raw materials
+bid-vault/
+artifacts/
+docx-md-bundles/
+docx-md-test/
+ovp-bid-test-vault/
+ovp-test-vault/
+references/
+notes/
+docs/legacy-source-notes/
+
+# Raw source docs
+*.docx
+*.doc
+*.pdf
+*.zip
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.tif
+*.tiff
+
+# Python / editor noise
+__pycache__/
+*.pyc
+*.pyo
+*.swp
+.DS_Store
+.vscode/
+.idea/
+
+# Temporary outputs
+*.log
+*.tmp
+*.bak
