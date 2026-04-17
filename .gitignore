@@ -2,16 +2,16 @@
 .git/
 .hermes/
 
-# Heavy local workspaces and raw materials
-bid-vault/
-artifacts/
-docx-md-bundles/
-docx-md-test/
-ovp-bid-test-vault/
-ovp-test-vault/
-references/
-notes/
-docs/legacy-source-notes/
+# Heavy local workspaces and raw materials (root-level only)
+/bid-vault/
+/artifacts/
+/docx-md-bundles/
+/docx-md-test/
+/ovp-bid-test-vault/
+/ovp-test-vault/
+/references/
+/notes/
+/docs/legacy-source-notes/
 
 # Raw source docs
 *.docx
