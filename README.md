@@ -18,13 +18,25 @@ The system is designed around four principles:
 3. strict separation between bidder capability and vendor/original-manufacturer capability
 4. Obsidian-style AI-managed knowledge base with `raw / wiki / output / logs`
 
+## Stack model
+
+This product is intended to run as a stack:
+- Hermes = runtime and orchestration
+- bid-manager = user-facing bidding agent
+- Obsidian = local vault viewing/editing surface
+- OVP (`obsidian_vault_pipeline`) = self-managed knowledge-layer engine
+- bid-specific bridge layer = tender/document normalization before knowledge compilation
+
 ## What is in this repo
 
 - `skills/bid-manager/SKILL.md` — main Hermes skill and product entrypoint
-- `docs/` — architecture, workflow, deployment, repository boundary, sub-agent model
+- `docs/` — architecture, workflow, deployment, repository boundary, stack setup, sub-agent model
 - `templates/` — reusable markdown templates for intake, evidence, mapping, and review
 - `templates/workspace/` — recommended workspace skeleton
+- `templates/ovp-vault.env.example` — sample vault `.env` for OVP
 - `scripts/init-workspace.sh` — initialize a clean bid workspace
+- `scripts/check-prereqs.sh` — check local prerequisites
+- `scripts/install-ovp.sh` — install OVP from PyPI / GitHub / local checkout
 - `examples/demo-project/` — lightweight sanitized demo materials
 
 ## Intended runtime model
@@ -81,6 +93,59 @@ Only product-facing docs, templates, and skill definitions are published by defa
 10. formal-delivery conversion
 11. knowledge backflow
 
+## Installation order
+
+### 1. Check prerequisites
+```bash
+bash scripts/check-prereqs.sh
+```
+
+### 2. Install Hermes
+```bash
+curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+hermes doctor
+```
+
+### 3. Install OVP
+```bash
+bash scripts/install-ovp.sh pypi
+```
+
+### 4. Install Obsidian Desktop
+Install manually from:
+- https://obsidian.md/
+
+### 5. Initialize workspace
+```bash
+bash scripts/init-workspace.sh /path/to/my-bid-project
+```
+
+### 6. Create vault `.env`
+```bash
+cp templates/ovp-vault.env.example /path/to/my-bid-project/bid-vault/.env
+```
+
+### 7. Start the manager skill in Hermes
+```bash
+cd /path/to/my-bid-project
+hermes -s bid-manager
+```
+
+## Data ingestion model
+
+Recommended source placement:
+- tender docs -> `bid-vault/raw/tenders/`
+- historical bids -> `bid-vault/raw/historical-bids/`
+- company credentials -> `bid-vault/raw/company-credentials/`
+- vendor materials -> `bid-vault/raw/vendor-solutions/`
+
+Recommended DOCX bridge:
+```bash
+pandoc input.docx -t gfm --extract-media=<stem>-media -o <stem>.md
+```
+
+OVP should be treated as the vault knowledge layer, not as a complete bid-specific ingest engine by itself.
+
 ## Core public assets in this version
 
 ### Main skill
@@ -92,12 +157,14 @@ Only product-facing docs, templates, and skill definitions are published by defa
 - `docs/subagents.md`
 - `docs/deployment.md`
 - `docs/repository-boundary.md`
+- `docs/setup-stack.md`
 
 ### Reusable templates
 - `templates/project-start-sheet.md`
 - `templates/score-chapter-evidence-mapping.md`
 - `templates/evidence-page-template.md`
 - `templates/review-checklist.md`
+- `templates/ovp-vault.env.example`
 
 ### Demo
 - `examples/demo-project/README.md`
@@ -112,22 +179,7 @@ Compared with a normal “write the bid for me” agent, this system adds:
 - formal-delivery cleanup rules
 - reusable knowledge accumulation in Obsidian-style vault structure
 
-## Quick start
-
-### 1. Initialize a workspace
-
-```bash
-bash scripts/init-workspace.sh /path/to/my-bid-project
-```
-
-### 2. Start the manager skill in Hermes
-
-```bash
-cd /path/to/my-bid-project
-hermes -s bid-manager
-```
-
-### 3. Example prompt
+## Example startup prompt
 
 ```text
 请作为投标经理读取当前工作区材料，先完成项目启动咨询，再解析招标文件、整理证据、建立评分点-章节-证据映射、生成目录占位，并在需要时启用内部 sub agent。
