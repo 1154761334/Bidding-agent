@@ -1,274 +1,212 @@
-# Setup stack: Hermes + Obsidian + OVP
+# Setup stack: Hermes + OVP + optional Obsidian
 
 This document explains the intended product stack for this repository.
 
-The stack has three layers:
-1. Hermes = agent runtime
-2. Obsidian = human-facing vault viewer/editor
-3. Obsidian Vault Pipeline (OVP) = self-managed knowledge-layer engine
+The practical setup is:
+1. Hermes = runtime and orchestration
+2. OVP (`obsidian_vault_pipeline`) = knowledge-layer engine
+3. Obsidian = optional human-facing vault viewer/editor
 
 ## 1. Architecture decision
 
 Recommended architecture:
-- `bid-manager` remains the bidding manager agent and workflow engine
-- Obsidian is not the main application UI; it is the vault interface
-- `obsidian_vault_pipeline` is used as the knowledge-layer management engine
-- A bid-specific bridge layer is still needed before/around OVP for tender materials
+- keep `Bidding-agent` and `obsidian_vault_pipeline` as sibling repositories
+- use `bid-manager` as the single workflow entrypoint
+- let OVP remain the knowledge-layer engine
+- treat Obsidian as optional inspection/editing UI, not a startup blocker
 
 This means:
 - Hermes runs the bidding workflow
 - OVP manages compiled vault knowledge
-- Obsidian is used to inspect and maintain the vault
+- Obsidian is used only when a human wants to inspect the vault visually
+- current tender packages stay in project input folders unless promoted later
 
-## 2. Required components
+## 2. What users actually need to pull
+
+The normal user setup is not "install everything from zero every time".
+The standard stack is:
+
+```bash
+git clone <your-bidding-agent-repo-url> /root/bid-stack/Bidding-agent
+git clone https://github.com/1154761334/obsidian_vault_pipeline.git /root/bid-stack/obsidian_vault_pipeline
+```
+
+If Hermes, OVP, or Obsidian are already installed and working, do not reinstall them just because a new bid project starts.
+
+## 3. Required components
 
 ### A. Hermes
 Purpose:
 - run `bid-manager`
-- coordinate sub-agents
-- drive workflow states and output generation
+- coordinate internal execution roles
+- keep the workflow centered on one manager-facing conversation
 
-Install:
+Install once if needed:
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
 hermes doctor
 ```
 
-### B. Obsidian
+### B. OVP
 Purpose:
-- open and inspect the vault locally
-- review `raw / wiki / output / logs`
-- manually navigate knowledge pages and artifacts
-
-Note:
-- Obsidian is a desktop application, not required for CLI-only runtime
-- if Obsidian is not installed, the system can still run in CLI mode
-- current local environment check showed: `obsidian` command not found
-
-Install:
-- install Obsidian Desktop manually from https://obsidian.md/
-- open the generated vault folder after workspace initialization
-
-### C. Obsidian Vault Pipeline (OVP)
-Purpose:
-- self-managed vault compilation
-- raw markdown processing
-- registry / lint / knowledge index / pack runtime
+- maintain the vault knowledge layer
+- provide `.env`-driven model access and vault tooling
+- support reusable knowledge promotion outside the immediate project run
 
 Recommended source:
-- upstream repo: `https://github.com/fakechris/obsidian_vault_pipeline`
+- development fork: `https://github.com/1154761334/obsidian_vault_pipeline`
 
-## 3. OVP dependency findings
+Recommended install:
 
-Based on the local reference copy, the key runtime requirements are:
-- Python >= 3.10
-- hatchling build backend
-- anthropic>=0.21.0
-- openai>=1.0.0
-- litellm>=1.0.0
-- python-dotenv>=1.0.0
-- requests>=2.28.0
-- pyyaml>=6.0
-- feedparser>=6.0.0
-- beautifulsoup4>=4.12.0
-- tiktoken>=0.5.0
-- watchdog>=3.0.0
-- networkx>=3.0
-
-Useful optional local tool for bid ingestion:
-- `pandoc` for `.docx -> markdown + extracted media`
-
-Current local environment check:
-- Python: present
-- Hermes: present
-- pandoc: present
-- Obsidian CLI command: not present
-
-## 4. OVP installation options
-
-### Option A: install from PyPI
 ```bash
-python3 -m pip install --user obsidian-vault-pipeline
+cd /root/bid-stack/Bidding-agent
+bash scripts/install-ovp.sh local
 ```
 
-If user-scoped install fails, upstream provides a helper script pattern and suggests:
-- use `pipx install obsidian-vault-pipeline`
-- or opt in to `--break-system-packages` only if needed
+The helper retries with `--break-system-packages` automatically if plain `pip install --user` is blocked.
 
-### Option B: install from local reference checkout
-If you already have the reference repo locally:
-```bash
-cd /path/to/obsidian_vault_pipeline
-python3 -m pip install --user -e .
-```
+### C. Obsidian
+Purpose:
+- open and inspect the vault locally
+- review `inbox / raw / wiki / output / logs`
 
-### Option C: install from GitHub directly
-```bash
-python3 -m pip install --user git+https://github.com/fakechris/obsidian_vault_pipeline.git
-```
+Notes:
+- optional for CLI-only runtime
+- useful, but not required to start the manager workflow
 
-## 5. OVP environment requirements
+Install manually from `https://obsidian.md/` if you want the desktop viewer.
 
-Important finding from prior testing:
+## 4. OVP environment requirement
+
+Important behavior from prior testing:
 - `ovp --check --vault-dir <vault>` expects a `.env` in the vault root
-- do not assume only global shell env is enough
+- do not assume a global shell environment alone is enough
 
 Typical `.env` values are provider/model-related, for example:
 - `AUTO_VAULT_API_KEY`
 - `AUTO_VAULT_API_BASE`
 - `AUTO_VAULT_MODEL`
-- optional proxy settings
 
-The exact field names come from the OVP layer, not Hermes.
+The exact field names come from OVP, not Hermes.
 
-## 6. Recommended installation sequence for users
+## 5. Recommended installation sequence
 
-### Step 1: install Hermes
+### Step 1: verify local prerequisites
+
 ```bash
-curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
-hermes doctor
+cd /root/bid-stack/Bidding-agent
+bash scripts/check-prereqs.sh
 ```
 
-### Step 2: install OVP
-Recommended:
+### Step 2: bootstrap the workspace
+
 ```bash
-python3 -m pip install --user obsidian-vault-pipeline
+cd /root/bid-stack/Bidding-agent
+bash scripts/bootstrap-stack.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
 ```
 
-Or from local reference / GitHub if you want a pinned source.
+This does three things:
+- initializes the standard workspace layout
+- creates the current project input folder
+- copies `templates/ovp-vault.env.example` into the vault root if `.env` is missing
 
-### Step 3: install Obsidian Desktop
-- install manually from the official website
-- later open your vault folder in Obsidian
+### Step 3: fill the project materials
 
-### Step 4: initialize the bid workspace
-```bash
-bash scripts/init-workspace.sh /path/to/my-bid-project
-```
+Place files under:
 
-### Step 5: create vault `.env`
-Inside:
 ```text
-/path/to/my-bid-project/bid-vault/.env
-```
-Add the OVP-required model settings.
-
-### Step 6: open the vault in Obsidian
-Open:
-```text
-/path/to/my-bid-project/bid-vault/
+bid-vault/inbox/projects/ctzb-2023110453/
+├── PROJECT-INPUT.md
+├── tender/
+├── company-inputs/
+├── vendor-inputs/
+└── notes/
 ```
 
-### Step 7: start Hermes manager
+### Step 4: start the manager
+
+Recommended helper:
+
 ```bash
-cd /path/to/my-bid-project
-hermes -s bid-manager
+cd /root/bid-stack/Bidding-agent
+bash scripts/start-bid-manager.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
 ```
 
-## 7. How data enters the system
+If you want a one-shot initialization query:
 
-This is critical.
-Do not rely on OVP alone to ingest real tender materials directly.
+```bash
+bash scripts/start-bid-manager.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453 --one-shot
+```
 
-### Recommended ingestion path
+## 6. How data enters the system
 
-#### Tender documents
-Place under:
+Separate current project input from reusable knowledge assets.
+
+### Current project input
+
+Create a project folder under:
+
 ```text
-bid-vault/raw/tenders/
+bid-vault/inbox/projects/<project-id>/
 ```
 
-#### Historical bids
-Place under:
+Recommended layout:
+
+```text
+bid-vault/inbox/projects/<project-id>/
+├── PROJECT-INPUT.md
+├── tender/
+├── company-inputs/
+├── vendor-inputs/
+└── notes/
+```
+
+The current tender package belongs here.
+It is parsed for the current run, but not treated as default long-term reusable knowledge.
+
+### Reusable knowledge assets
+
+Historical bids:
+
 ```text
 bid-vault/raw/historical-bids/
 ```
 
-#### Company credentials
-Place under:
+Company credentials:
+
 ```text
 bid-vault/raw/company-credentials/
 ```
 
-#### Vendor/original-manufacturer materials
-Place under:
+Vendor/original-manufacturer materials:
+
 ```text
 bid-vault/raw/vendor-solutions/
 ```
 
-### DOCX recommendation
-For bid materials, prefer:
+### Lightweight helper recommendation
+
+For Office materials, prefer:
+
 ```bash
-pandoc input.docx -t gfm --extract-media=<stem>-media -o <stem>.md
+bash scripts/convert-docx.sh input.docx /root/bid-stack/workspaces/my-bid-project/docx-bundle
 ```
 
-Then store as a bundle:
-```text
-raw/<category>/<doc-name>/
-├── source.md
-├── attachments/
-└── <doc-name>.vault.md
-```
+## 7. How users should think about the product
 
-### Why this bridge is needed
-OVP is not itself a bid-specific parser.
-Its default flow is markdown-oriented and pack-oriented.
-So the recommended model is:
-- keep OVP upstream mostly unmodified
-- add a bid-specific bridge layer before OVP
-- normalize `.docx / pdf / jpg` into markdown sidecars / OCR sidecars
-- let OVP manage the compiled vault
-- let Hermes `bid-manager` run the bid workflow on top of that knowledge layer
-
-## 8. How users run the system
-
-There are two practical operating modes.
-
-### Mode A: manager-first workflow (recommended)
-User starts Hermes and works through the bid workflow:
-```bash
-cd /path/to/my-bid-project
-hermes -s bid-manager
-```
-
-Suggested prompt:
-```text
-请作为投标经理读取当前工作区材料，先完成项目启动咨询，再解析招标文件、整理证据、建立评分点-章节-证据映射、生成目录占位，并在需要时启用内部 sub agent。
-```
-
-### Mode B: knowledge-layer maintenance first
-If the user first wants to normalize and maintain the vault layer, they can use OVP commands directly.
-Examples from upstream include:
-```bash
-ovp --check --vault-dir /path/to/my-bid-project/bid-vault
-ovp-doctor --pack research-tech --json
-ovp-packs
-```
-
-But for this product, OVP is not the user-facing workflow center.
-Hermes remains the main interaction layer.
-
-## 9. Recommended product framing for the repo
-
-The repository should explain the stack like this:
+Recommended framing:
 - Hermes = runtime and orchestration
-- bid-manager = user-facing product entry
-- Obsidian = vault viewing/editing surface
-- OVP = self-managed knowledge-layer engine
-- bridge scripts/process = bid-specific ingestion and normalization
+- `bid-manager` = user-facing product entry
+- OVP = knowledge-layer engine
+- Obsidian = optional vault viewer
+- helper scripts = workspace bootstrap and startup convenience
 
-## 10. Known limitations right now
+The user interacts with one bid manager.
+Internally, the manager may dispatch evidence, drafting, compliance, formatting, and QA roles when complexity justifies it.
 
-1. OVP upstream default pack is not bid-specific
-2. bid-specific ingestion bridge is still lightweight, not yet a full dedicated pack
-3. Obsidian installation is still a manual desktop step
-4. certificate/image-heavy OCR flow is not yet fully automated inside this repo
-5. current public repo documents the architecture, but still needs more operator-grade bootstrap guidance
+## 8. Known limitations right now
 
-## 11. Recommended next product improvements
-
-Priority order:
-1. add a repo-local bootstrap/check script for Hermes + OVP prerequisites
-2. add a repo-local OVP setup guide and `.env` example for bid usage
-3. add a bid-specific ingestion helper script for `.docx -> bundle`
-4. later evaluate whether to build a true `bid` domain pack for OVP
+- the project input model is convention-driven rather than enforced by a full custom bridge
+- reusable knowledge promotion is still guided by templates and skill rules, not a dedicated bid pack
+- complex PDF/OCR handling is intentionally lightweight in this version

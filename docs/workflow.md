@@ -3,18 +3,20 @@
 ## Default workflow
 
 ```text
-materials intake
+project folder intake
 → project-start questions
 → workspace validation
-→ tender/package parse
+→ current tender/package parse
+→ reusable-knowledge retrieval
 → evidence organization
 → score-point / chapter / evidence mapping
 → outline generation
 → user confirmation
 → drafting
-→ review
-→ formalization
-→ export + backflow
+→ compliance review
+→ formatting
+→ QA audit
+→ release + backflow
 ```
 
 ## Stage details
@@ -32,14 +34,15 @@ Recommended artifact:
 ### 2. Workspace validation
 Check for:
 - `bid-vault/`
-- source tender materials
+- current project input folder under `bid-vault/inbox/projects/`
 - company credentials
 - vendor materials
+- reusable knowledge folders under `raw/`
 
 If missing, initialize the standard structure.
 If materials are partial, continue only after explicitly marking what is missing.
 
-### 3. Tender/package parse
+### 3. Current tender/package parse
 Extract at minimum:
 - qualification requirements
 - compliance and rejection rules
@@ -49,22 +52,40 @@ Extract at minimum:
 - whether the tender is single-pack or multi-pack
 
 Gate:
-- if multi-pack and target pack is not confirmed, stop here and ask the user.
+- if multi-pack and target pack is not confirmed, stop here and ask the user
 
-### 4. Evidence organization
+Important boundary:
+- parse the tender from the current project input folder
+- do not treat the tender file itself as a long-term wiki fact unless explicitly promoted later
+
+### 4. Reusable-knowledge retrieval
+Before evidence mapping, fetch reusable materials from the knowledge layer:
+- historical bids
+- company credentials
+- vendor/original-manufacturer materials
+- prior reusable chapter or evidence patterns
+
+The manager should explicitly separate:
+- bidder-owned material
+- vendor-owned material
+- missing material
+
+### 5. Evidence organization
+Prefer `evidence-agent` for medium or large projects.
+
 Create or update:
 - evidence pages
 - missing-material checklist
 - ownership tags: bidder vs vendor
 
 Gate:
-- unsupported capability claims cannot move to formal output.
-- evidence ownership must be explicit.
+- unsupported capability claims cannot move to formal output
+- evidence ownership must be explicit
 
 Recommended artifact:
 - `templates/evidence-page-template.md`
 
-### 5. Score-point / chapter / evidence mapping
+### 6. Score-point / chapter / evidence mapping
 Before major drafting, build the mapping layer.
 For each score point or key requirement, identify:
 - target chapter
@@ -73,35 +94,35 @@ For each score point or key requirement, identify:
 - current status
 
 Gate:
-- if major mapping rows are still unknown, say so explicitly and avoid presenting the draft as complete.
+- if major mapping rows are still unknown, say so explicitly and avoid presenting the draft as complete
 
 Recommended artifact:
 - `templates/score-chapter-evidence-mapping.md`
 
-### 6. Outline generation
+### 7. Outline generation
 Create placeholders under project output.
 Each chapter placeholder should contain:
 - chapter title
 - relevant clause summary
 - status
 - missing material list
+- expected drafting owner
 
-### 7. User confirmation
+### 8. User confirmation
 Manager presents the outline and asks for confirmation.
 
 Gate:
-- no full drafting before user confirms outline.
+- no full drafting before user confirms outline
 
-### 8. Drafting
-Use either:
-- manager direct drafting for small/simple jobs
-- internal sub-agent orchestration for larger jobs
+### 9. Drafting
+Prefer `drafting-agent` for substantive writing.
+If volume is high, the manager may split drafting into multiple workers, but those workers still belong to the drafting lane rather than replacing the manager role.
 
-Recommended trigger for sub-agents:
-- 8+ chapters
-- business + technical volumes in parallel
+Recommended triggers for separated drafting:
+- 8+ meaningful chapters
+- business and technical sections moving in parallel
 - heavy vendor material load
-- separate review needed
+- multiple deliverable volumes
 
 For each drafted chapter, report:
 - clauses addressed
@@ -109,32 +130,47 @@ For each drafted chapter, report:
 - missing evidence/materials
 - whether it is still internal draft only
 
-### 9. Review
-Review checks:
+### 10. Compliance review
+Use `compliance-agent` to verify:
 - clause coverage
 - score-point coverage
-- evidence placement
-- bidder/vendor boundary
+- required evidence linkage
+- bidder/vendor boundary correctness
 - over-commitment risks
-- formal-delivery contamination by internal notes
+- rejection-risk items
 
-Recommended artifact:
-- `templates/review-checklist.md`
+Gate:
+- major blockers must be visible before the draft can move into formatting
 
-### 10. Formalization
-Convert internal working draft into formal delivery draft:
+### 11. Formatting
+Use `formatting-agent` to convert internal working output into formal-delivery style:
 - remove internal process language
+- normalize chapter headers and placeholders
 - keep only formal conclusion-style content
-- ensure evidence-backed claims
-- place evidence near the corresponding claims where appropriate
 - mark unfinished page numbers as `[to be filled]`
 
-### 11. Backflow
+Gate:
+- formatting does not close unresolved compliance issues
+
+### 12. QA audit
+Use `qa-audit-agent` for an independent pass over:
+- cross-section consistency
+- unsupported claims
+- drift between outline, mapping, and final text
+- release readiness
+
+Gate:
+- the same role should not both draft and final-approve the same artifact on medium or large projects
+
+### 13. Backflow
 Promote reusable outputs into `wiki/`:
 - chapter templates
 - evidence patterns
 - mapping patterns
 - review checklists
+- QA/audit patterns
+
+Do not promote the raw tender text into the reusable layer by default.
 
 ## Output philosophy
 

@@ -9,9 +9,19 @@ Keep:
 - helper scripts
 - sanitized demo descriptions
 
+## Two-repo stack policy
+
+Recommended published structure:
+- `Bidding-agent` stays focused on workflow, docs, templates, and startup helpers
+- `obsidian_vault_pipeline` stays in its own fork/repository as the knowledge-layer dependency
+
+Do not vendor OVP into this repo by default.
+Package the system as one local stack root instead of one merged repository.
+
 ## What stays local by default
 
 Exclude from version control:
+- `bid-vault/inbox/projects/` project input folders
 - raw bid source documents
 - converted media attachments
 - generated `.docx` exports
@@ -19,6 +29,11 @@ Exclude from version control:
 - certificate images
 - heavy experimental vaults
 - third-party reference trees copied locally for research
+
+Recommended local parent layout outside the repo:
+- `/root/bid-stack/Bidding-agent`
+- `/root/bid-stack/obsidian_vault_pipeline`
+- `/root/bid-stack/workspaces/`
 
 ## Current prototype-origin note
 
