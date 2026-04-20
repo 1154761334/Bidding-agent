@@ -1,0 +1,6 @@
+input_file	minimal-bid.docx
+allowed_adapters	markitdown,pandoc
+require_attachments_dir	false
+must_contain	标准化层 DOCX 样例
+must_contain	资格条款
+must_contain	服务团队

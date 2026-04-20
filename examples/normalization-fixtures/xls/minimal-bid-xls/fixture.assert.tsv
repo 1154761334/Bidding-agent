@@ -1,0 +1,6 @@
+input_file	minimal-bid.xls
+allowed_adapters	markitdown
+require_attachments_dir	false
+must_contain	评分项
+must_contain	实施经理
+must_contain	案例证明

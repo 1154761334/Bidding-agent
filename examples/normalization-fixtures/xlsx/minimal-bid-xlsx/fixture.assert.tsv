@@ -1,0 +1,6 @@
+input_file	minimal-bid.xlsx
+allowed_adapters	markitdown
+require_attachments_dir	false
+must_contain	评分项
+must_contain	技术方案
+must_contain	资质证明

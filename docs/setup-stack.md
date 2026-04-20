@@ -77,6 +77,18 @@ Notes:
 
 Install manually from `https://obsidian.md/` if you want the desktop viewer.
 
+### D. markitdown
+Purpose:
+- normalize Word/PDF/Excel/PPT into Markdown-first working copies
+- provide one preferred adapter for current-project input standardization
+
+Recommended install:
+
+```bash
+cd /root/bid-stack/Bidding-agent
+bash scripts/install-markitdown.sh venv
+```
+
 ## 4. OVP environment requirement
 
 Important behavior from prior testing:
@@ -106,12 +118,26 @@ cd /root/bid-stack/Bidding-agent
 bash scripts/bootstrap-stack.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
 ```
 
-This does three things:
+This does four things:
 - initializes the standard workspace layout
 - creates the current project input folder
+- creates the project-run working folder under `bid-vault/output/project-runs/<project-id>/`
 - copies `templates/ovp-vault.env.example` into the vault root if `.env` is missing
 
-### Step 3: fill the project materials
+### Step 3: install the preferred normalizer
+
+```bash
+cd /root/bid-stack/Bidding-agent
+bash scripts/install-markitdown.sh venv
+```
+
+If you prefer a local editable clone:
+
+```bash
+bash scripts/install-markitdown.sh venv-clone
+```
+
+### Step 4: fill the project materials
 
 Place files under:
 
@@ -119,18 +145,40 @@ Place files under:
 bid-vault/inbox/projects/ctzb-2023110453/
 ├── PROJECT-INPUT.md
 ├── tender/
+├── addenda/
 ├── company-inputs/
+├── project-attachments/
 ├── vendor-inputs/
 └── notes/
 ```
 
-### Step 4: start the manager
+### Step 5: normalize current project files
+
+```bash
+cd /root/bid-stack/Bidding-agent
+bash scripts/normalize-project-inputs.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
+```
+
+### Step 6: generate the parse skeleton
+
+```bash
+cd /root/bid-stack/Bidding-agent
+bash scripts/generate-parse-skeleton.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
+```
+
+### Step 7: start the manager
 
 Recommended helper:
 
 ```bash
 cd /root/bid-stack/Bidding-agent
 bash scripts/start-bid-manager.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
+```
+
+Prompt preview without launching Hermes:
+
+```bash
+bash scripts/start-bid-manager.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453 --dry-run
 ```
 
 If you want a one-shot initialization query:
@@ -157,7 +205,9 @@ Recommended layout:
 bid-vault/inbox/projects/<project-id>/
 ├── PROJECT-INPUT.md
 ├── tender/
+├── addenda/
 ├── company-inputs/
+├── project-attachments/
 ├── vendor-inputs/
 └── notes/
 ```
@@ -187,10 +237,29 @@ bid-vault/raw/vendor-solutions/
 
 ### Lightweight helper recommendation
 
-For Office materials, prefer:
+For full project normalization, prefer:
+
+```bash
+bash scripts/normalize-project-inputs.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
+```
+
+Then prefill the tender parse skeleton with:
+
+```bash
+bash scripts/generate-parse-skeleton.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
+```
+
+For one-off files:
+
+```bash
+bash scripts/normalize-document.sh input.docx /root/bid-stack/workspaces/my-bid-project/doc-normalized tender
+```
+
+Fallback helpers:
 
 ```bash
 bash scripts/convert-docx.sh input.docx /root/bid-stack/workspaces/my-bid-project/docx-bundle
+bash scripts/extract-pdf-text.sh input.pdf /root/bid-stack/workspaces/my-bid-project/pdf-text/input.txt
 ```
 
 ## 7. How users should think about the product
@@ -208,5 +277,7 @@ Internally, the manager may dispatch evidence, drafting, compliance, formatting,
 ## 8. Known limitations right now
 
 - the project input model is convention-driven rather than enforced by a full custom bridge
+- document normalization is helper-driven rather than backed by a dedicated ingestion service
+- generated parse skeletons remain scaffolds and do not replace manual review
 - reusable knowledge promotion is still guided by templates and skill rules, not a dedicated bid pack
-- complex PDF/OCR handling is intentionally lightweight in this version
+- complex binary-document handling is intentionally lightweight in this version

@@ -23,14 +23,10 @@ INPUT_DIR="$(cd "$(dirname "$INPUT_PATH")" && pwd -P)"
 INPUT_ABS="$INPUT_DIR/$INPUT_NAME"
 INPUT_STEM="${INPUT_NAME%.*}"
 OUTPUT_DIR="${2:-$(dirname "$INPUT_ABS")/$INPUT_STEM-bundle}"
-MEDIA_DIR="$OUTPUT_DIR/attachments"
-OUTPUT_MD="$OUTPUT_DIR/source.md"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-mkdir -p "$MEDIA_DIR"
-cp "$INPUT_ABS" "$OUTPUT_DIR/$INPUT_NAME"
+bash "$SCRIPT_DIR/normalize-document.sh" "$INPUT_ABS" "$OUTPUT_DIR" 'docx-helper' >/dev/null
 
-pandoc "$INPUT_ABS" -t gfm --extract-media="$MEDIA_DIR" -o "$OUTPUT_MD"
-
-printf 'Converted %s\n' "$INPUT_ABS"
+printf 'Normalized %s\n' "$INPUT_ABS"
 printf 'Bundle directory: %s\n' "$OUTPUT_DIR"
-printf 'Review %s before adding it to raw/ or a project input folder.\n' "$OUTPUT_MD"
+printf 'Review %s/source.md before adding it to raw/ or a project input folder.\n' "$OUTPUT_DIR"

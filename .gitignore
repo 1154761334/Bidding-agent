@@ -25,6 +25,10 @@
 *.tif
 *.tiff
 
+# Allow sanitized normalization fixtures
+!examples/normalization-fixtures/**/*.docx
+!examples/normalization-fixtures/**/*.pdf
+
 # Python / editor noise
 __pycache__/
 *.pyc

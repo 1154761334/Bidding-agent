@@ -1,0 +1,5 @@
+input_file	minimal-bid.txt
+allowed_adapters	copy-text
+require_attachments_dir	false
+must_contain	标准化层 TXT 样例
+must_contain	补遗说明

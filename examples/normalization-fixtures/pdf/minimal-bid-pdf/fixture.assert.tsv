@@ -1,0 +1,5 @@
+input_file	minimal-bid.pdf
+allowed_adapters	markitdown,pdftotext
+require_attachments_dir	false
+must_contain	Normalization PDF Fixture
+must_contain	Qualification requirement

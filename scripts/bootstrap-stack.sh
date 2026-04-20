@@ -17,6 +17,7 @@ bash "$SCRIPT_DIR/init-workspace.sh" "$WORKSPACE_DIR"
 
 if [ -n "$PROJECT_ID" ]; then
   bash "$SCRIPT_DIR/new-project-inbox.sh" "$WORKSPACE_DIR" "$PROJECT_ID"
+  bash "$SCRIPT_DIR/init-project-run.sh" "$WORKSPACE_DIR" "$PROJECT_ID"
 fi
 
 if [ ! -f "$ENV_PATH" ]; then
@@ -40,10 +41,16 @@ printf 'OVP status: %s\n' "$OVP_STATUS"
 
 if [ -n "$PROJECT_ID" ]; then
   PROJECT_DIR="$WORKSPACE_DIR/bid-vault/inbox/projects/$PROJECT_ID"
+  RUN_DIR="$WORKSPACE_DIR/bid-vault/output/project-runs/$PROJECT_ID"
   printf 'Project folder: %s\n' "$PROJECT_DIR"
+  printf 'Project run: %s\n' "$RUN_DIR"
   printf 'Next: place tender files under %s/tender/\n' "$PROJECT_DIR"
+  printf 'Next: place addenda and clarifications under %s/addenda/\n' "$PROJECT_DIR"
   printf 'Next: place bidder files under %s/company-inputs/\n' "$PROJECT_DIR"
   printf 'Next: place vendor files under %s/vendor-inputs/\n' "$PROJECT_DIR"
+  printf 'Next: place project-only attachments under %s/project-attachments/\n' "$PROJECT_DIR"
+  printf 'Normalize: bash scripts/normalize-project-inputs.sh %s %s\n' "$WORKSPACE_DIR" "$PROJECT_ID"
+  printf 'Check prompt only: bash scripts/start-bid-manager.sh %s %s --dry-run\n' "$WORKSPACE_DIR" "$PROJECT_ID"
   printf 'Start: bash scripts/start-bid-manager.sh %s %s\n' "$WORKSPACE_DIR" "$PROJECT_ID"
 else
   printf 'Next: create a project folder with bash scripts/new-project-inbox.sh %s <project-id>\n' "$WORKSPACE_DIR"

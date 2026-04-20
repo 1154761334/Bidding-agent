@@ -1,7 +1,7 @@
 ---
 name: bid-manager
 description: Single-entry Hermes bidding manager skill for IT/system-integrator tender projects. Presents as one bid manager agent while internally coordinating specialized drafting, evidence, compliance, formatting, and QA roles under strict gate control.
-version: 1.3.0
+version: 1.6.0
 author: Hermes Agent
 license: MIT
 metadata:
@@ -95,9 +95,14 @@ bid-vault/
 
 Recommended current-project input location:
 - `bid-vault/inbox/projects/<project-id>/tender/`
+- `bid-vault/inbox/projects/<project-id>/addenda/`
 - `bid-vault/inbox/projects/<project-id>/company-inputs/`
 - `bid-vault/inbox/projects/<project-id>/vendor-inputs/`
+- `bid-vault/inbox/projects/<project-id>/project-attachments/`
 - `bid-vault/inbox/projects/<project-id>/notes/`
+
+Preferred normalized working location for current project files:
+- `bid-vault/output/project-runs/<project-id>/normalized/`
 
 Recommended `raw/` subdirectories for reusable knowledge:
 - `historical-bids/`
@@ -134,6 +139,10 @@ Rules:
 - parse them aggressively for requirements, constraints, scoring points, and package structure
 - do not treat them as default reusable long-term wiki knowledge
 
+Preferred reading order:
+1. normalized current-project files under `bid-vault/output/project-runs/<project-id>/normalized/` when available
+2. raw current-project files under `bid-vault/inbox/projects/<project-id>/`
+
 ### B. Reusable knowledge layer
 This includes:
 - historical bids
@@ -156,19 +165,37 @@ Rules:
 Operate in this order:
 1. intake
 2. workspace check
-3. current tender/package parse
-4. reusable-knowledge retrieval
-5. evidence organization
-6. score-point / chapter / evidence mapping
-7. outline generation
-8. user confirmation gate
-9. drafting
-10. compliance review
-11. formatting
-12. QA audit
-13. export/backflow
+3. current project document normalization check
+4. parse skeleton review
+5. current tender/package parse
+6. reusable-knowledge retrieval
+7. evidence organization
+8. score-point / chapter / evidence mapping
+9. outline generation
+10. user confirmation gate
+11. drafting
+12. compliance review
+13. formatting
+14. QA audit
+15. export/backflow
 
 At every stage, say which phase you are in.
+
+## V1 first milestone
+
+Unless the user explicitly asks to continue, the default V1 stopping point is:
+- normalization manifest review
+- parse skeleton review
+- project-start sheet
+- tender parse page
+- evidence gap list
+- score-point / chapter / evidence mapping
+- outline placeholders
+
+At this milestone:
+- do not present full chapter drafts as complete
+- do not hide missing evidence
+- do not treat the current tender package as reusable knowledge
 
 ## Hard gates
 
@@ -187,8 +214,11 @@ Never bypass these rules:
 
 Aim to produce at least these objects for each project:
 - project input manifest
+- normalization manifest
+- parse skeleton
 - project-start sheet
 - package parse page
+- evidence gap list
 - qualification checklist
 - rejection-risk checklist
 - score-point / chapter / evidence mapping page
@@ -223,8 +253,22 @@ When parsing the current tender, extract at minimum:
 - scoring point structure
 - required document structure
 - signature / seal / copies / packaging / electronic submission rules
+- changes introduced by addenda, clarifications, and project-only attachments
 
 Do not move into outline generation until package confirmation and basic parse are complete.
+
+If `bid-vault/output/project-runs/<project-id>/02-TENDER-PARSE.generated.md` exists:
+- review it first as the machine-generated starting point
+- keep human judgment visible when correcting or expanding it
+- do not mistake generated placeholders for finished factual analysis
+
+## Normalization rules
+
+When current-project inputs contain office or binary documents:
+- prefer normalized Markdown under `bid-vault/output/project-runs/<project-id>/normalized/`
+- if normalized files are missing, say so explicitly and continue conservatively from the raw inputs
+- do not confuse normalization output with reusable knowledge promotion
+- treat conversion failures and low-quality extracts as risk signals that must stay visible
 
 ## Reusable-knowledge retrieval requirements
 

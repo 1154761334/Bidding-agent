@@ -6,6 +6,8 @@
 project folder intake
 → project-start questions
 → workspace validation
+→ current project document normalization
+→ parse skeleton generation
 → current tender/package parse
 → reusable-knowledge retrieval
 → evidence organization
@@ -42,7 +44,47 @@ Check for:
 If missing, initialize the standard structure.
 If materials are partial, continue only after explicitly marking what is missing.
 
-### 3. Current tender/package parse
+### 3. Current project document normalization
+Normalize current-project inputs into Markdown-first working bundles before heavy parsing.
+
+Preferred location:
+- `bid-vault/output/project-runs/<project-id>/normalized/`
+
+Preferred adapter:
+- `markitdown`
+
+Fallback adapters:
+- `pandoc` for DOCX compatibility and media extraction
+- `pdftotext` for simple PDF fallback
+
+Rules:
+- raw source files remain in `bid-vault/inbox/projects/<project-id>/`
+- normalization output is still project-run data, not long-term knowledge
+- failed or weak conversions must be recorded before parsing continues
+
+Recommended artifact:
+- `templates/normalization-manifest.md`
+
+See design:
+- `docs/normalization-design.md`
+
+### 4. Parse skeleton generation
+Generate a first-pass tender parse skeleton from normalized inputs before deeper analysis.
+
+Inputs:
+- `bid-vault/output/project-runs/<project-id>/00-NORMALIZATION-MANIFEST.md`
+- `bid-vault/output/project-runs/<project-id>/normalized/normalization-index.tsv`
+- normalized markdown bundles
+
+Outputs:
+- `bid-vault/output/project-runs/<project-id>/02-TENDER-PARSE.generated.md`
+- `bid-vault/output/project-runs/<project-id>/parse-input-index.tsv`
+
+Rules:
+- do not overwrite an existing human-maintained `02-TENDER-PARSE.md`
+- generated content is an inventory and placeholder scaffold, not a factual parse
+
+### 5. Current tender/package parse
 Extract at minimum:
 - qualification requirements
 - compliance and rejection rules
@@ -56,9 +98,10 @@ Gate:
 
 Important boundary:
 - parse the tender from the current project input folder
+- parse addenda, clarifications, and project-only attachments from the same current-project input area
 - do not treat the tender file itself as a long-term wiki fact unless explicitly promoted later
 
-### 4. Reusable-knowledge retrieval
+### 6. Reusable-knowledge retrieval
 Before evidence mapping, fetch reusable materials from the knowledge layer:
 - historical bids
 - company credentials
@@ -70,7 +113,7 @@ The manager should explicitly separate:
 - vendor-owned material
 - missing material
 
-### 5. Evidence organization
+### 7. Evidence organization
 Prefer `evidence-agent` for medium or large projects.
 
 Create or update:
@@ -84,8 +127,9 @@ Gate:
 
 Recommended artifact:
 - `templates/evidence-page-template.md`
+- `templates/evidence-gap-report.md`
 
-### 6. Score-point / chapter / evidence mapping
+### 8. Score-point / chapter / evidence mapping
 Before major drafting, build the mapping layer.
 For each score point or key requirement, identify:
 - target chapter
@@ -99,8 +143,8 @@ Gate:
 Recommended artifact:
 - `templates/score-chapter-evidence-mapping.md`
 
-### 7. Outline generation
-Create placeholders under project output.
+### 9. Outline generation
+Create placeholders under `bid-vault/output/project-runs/<project-id>/`.
 Each chapter placeholder should contain:
 - chapter title
 - relevant clause summary
@@ -108,13 +152,28 @@ Each chapter placeholder should contain:
 - missing material list
 - expected drafting owner
 
-### 8. User confirmation
+Recommended artifact:
+- `templates/outline-template.md`
+
+### 10. User confirmation
 Manager presents the outline and asks for confirmation.
 
 Gate:
 - no full drafting before user confirms outline
 
-### 9. Drafting
+### V1 default stopping point
+For the minimum runnable V1, the manager should normally stop after:
+1. normalization manifest
+2. parse skeleton
+3. project-start sheet
+4. tender parse page
+5. evidence gap list
+6. score-point / chapter / evidence mapping
+7. outline placeholders
+
+If evidence is missing, the manager reports the gap instead of pretending the draft is ready.
+
+### 11. Drafting
 Prefer `drafting-agent` for substantive writing.
 If volume is high, the manager may split drafting into multiple workers, but those workers still belong to the drafting lane rather than replacing the manager role.
 
@@ -130,7 +189,7 @@ For each drafted chapter, report:
 - missing evidence/materials
 - whether it is still internal draft only
 
-### 10. Compliance review
+### 12. Compliance review
 Use `compliance-agent` to verify:
 - clause coverage
 - score-point coverage
@@ -142,7 +201,7 @@ Use `compliance-agent` to verify:
 Gate:
 - major blockers must be visible before the draft can move into formatting
 
-### 11. Formatting
+### 13. Formatting
 Use `formatting-agent` to convert internal working output into formal-delivery style:
 - remove internal process language
 - normalize chapter headers and placeholders
@@ -152,7 +211,7 @@ Use `formatting-agent` to convert internal working output into formal-delivery s
 Gate:
 - formatting does not close unresolved compliance issues
 
-### 12. QA audit
+### 14. QA audit
 Use `qa-audit-agent` for an independent pass over:
 - cross-section consistency
 - unsupported claims
@@ -162,7 +221,7 @@ Use `qa-audit-agent` for an independent pass over:
 Gate:
 - the same role should not both draft and final-approve the same artifact on medium or large projects
 
-### 13. Backflow
+### 15. Backflow
 Promote reusable outputs into `wiki/`:
 - chapter templates
 - evidence patterns

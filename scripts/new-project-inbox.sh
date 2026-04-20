@@ -20,8 +20,10 @@ fi
 
 mkdir -p \
   "$PROJECT_DIR/tender" \
+  "$PROJECT_DIR/addenda" \
   "$PROJECT_DIR/company-inputs" \
   "$PROJECT_DIR/vendor-inputs" \
+  "$PROJECT_DIR/project-attachments" \
   "$PROJECT_DIR/notes"
 
 if [ -f "$TEMPLATE_PATH" ] && [ ! -f "$PROJECT_DIR/PROJECT-INPUT.md" ]; then
@@ -30,5 +32,7 @@ fi
 
 printf 'Created project input folder at %s\n' "$PROJECT_DIR"
 printf 'Place the tender package under %s/tender/\n' "$PROJECT_DIR"
+printf 'Place addenda and clarifications under %s/addenda/\n' "$PROJECT_DIR"
 printf 'Place project-specific bidder material under %s/company-inputs/\n' "$PROJECT_DIR"
 printf 'Place project-specific vendor material under %s/vendor-inputs/\n' "$PROJECT_DIR"
+printf 'Place project-only attachments under %s/project-attachments/\n' "$PROJECT_DIR"

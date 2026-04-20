@@ -125,12 +125,32 @@ Boundary:
 - reusable bidder/vendor knowledge belongs in `raw/` and promoted `wiki/` pages
 - the tender package itself is not the default canonical long-term knowledge object
 
+## Document normalization layer
+
+Between raw current-project input and parsing, keep a lightweight normalization layer:
+- raw files remain under `bid-vault/inbox/projects/<project-id>/`
+- normalized Markdown-first bundles live under `bid-vault/output/project-runs/<project-id>/normalized/`
+- normalized output is for the current project run, not for automatic long-term promotion
+
+Preferred adapter:
+- `markitdown`
+
+Fallback adapters:
+- `pandoc` for DOCX compatibility and attachment extraction
+- `pdftotext` for simple PDF text fallback
+
+See also:
+- `docs/normalization-design.md`
+
 ## Core product objects
 
 Minimum durable objects:
 - project input manifest
+- normalization manifest
+- parse skeleton
 - project-start sheet
 - package parse page
+- evidence gap report
 - score-point / chapter / evidence mapping page
 - evidence pages
 - outline placeholders
@@ -145,16 +165,28 @@ Minimum durable objects:
 1. project folder intake
 2. startup intake
 3. workspace validation
-4. current tender parse
-5. reusable-knowledge retrieval
-6. evidence organization
-7. score-point / chapter / evidence mapping
-8. outline generation and confirmation
-9. drafting
-10. compliance review
-11. formatting
-12. QA/audit
-13. release and backflow
+4. current project document normalization
+5. parse skeleton generation
+6. current tender parse
+7. reusable-knowledge retrieval
+8. evidence organization
+9. score-point / chapter / evidence mapping
+10. outline generation and confirmation
+11. drafting
+12. compliance review
+13. formatting
+14. QA/audit
+15. release and backflow
+
+For V1, the default first milestone ends after:
+- normalization manifest
+- parse skeleton
+- package parse
+- evidence gap report
+- mapping page
+- outline placeholders
+
+Full drafting happens only after that milestone is reviewed.
 
 ## Gate rules
 
