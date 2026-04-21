@@ -2,183 +2,157 @@
 
 ## Product goal
 
-Deliver a Hermes-native bidding system that feels like one professional bid manager while internally coordinating specialized execution roles over an OVP-backed knowledge layer.
+Deliver a Hermes-native bidding system that feels like one professional bid manager while internally coordinating specialized roles over an OVP-backed knowledge layer.
 
 ## Packaging model
 
 The recommended deployment unit is one stack with two repositories:
+
 - `Bidding-agent` for workflow, templates, startup helpers, and the `bid-manager` skill
 - `obsidian_vault_pipeline` for the vault knowledge engine
 
-This is intentionally a stack package, not a codebase merge.
-Users experience one product, but the repos stay separable for maintenance.
+This is a stack package, not a codebase merge.
 
 ## External shape
 
-User sees only:
+The user should see only:
+
 - one skill: `bid-manager`
 - one identity: 投标经理 Agent
-- one workflow owner: the bid manager
+- one recommended CLI entry: `scripts/start-bid-manager.sh`
 
-The user should not decide which internal role to invoke.
+Other scripts are deterministic helpers, not separate user-facing workflow products.
 
 ## Internal collaboration model
 
-### 1. `bid-manager`
+### `bid-manager`
+
 Responsibilities:
+
 - project intake and startup sheet
+- workspace validation
 - package/lot confirmation
 - clause/scoring gate control
-- agent dispatch decisions
+- internal role dispatch decisions
 - merge and release decisions
 - final communication with the user
 
 Must not:
+
 - default to writing every chapter itself on complex projects
 - act as the only reviewer for its own major draft output on medium or large jobs
 - release formal output before internal gates are satisfied
 
-### 2. `evidence-agent`
+### `evidence-agent`
+
 Responsibilities:
+
 - organize bidder credentials
 - organize vendor/original-manufacturer materials
 - create evidence pages and missing-material lists
 - classify ownership: bidder vs vendor
 
-Must not:
-- write major chapters as its main job
-- claim vendor capability as bidder-owned capability
+### `drafting-agent`
 
-### 3. `drafting-agent`
 Responsibilities:
-- draft business and technical chapters from approved outline + mapping + evidence
-- expand solution, implementation, migration, service, and operation sections
+
+- draft chapters from approved outline, mapping, and evidence
 - distinguish vendor capability, bidder delivery capability, and collaborative sections
 
-Must not:
-- change outline structure without manager approval
-- over-commit beyond approved risk boundaries
-- self-approve formal release
+### `compliance-agent`
 
-### 4. `compliance-agent`
 Responsibilities:
+
 - cross-check tender clauses, scoring points, and chapter coverage
 - verify evidence linkage and mandatory response completeness
-- flag overstatements, omissions, and bid-rejection risks
+- flag overstatement and bid-rejection risks
 
-Must not:
-- silently rewrite project strategy
-- downgrade critical blockers into minor notes
+### `formatting-agent`
 
-### 5. `formatting-agent`
 Responsibilities:
-- convert internal working drafts into formal-delivery style
+
+- convert internal drafts into formal-delivery style
 - remove process notes and draft contamination
-- normalize placeholders, packaging notes, and chapter hygiene
 
-Must not:
-- invent missing content to make formatting look complete
-- bypass unresolved compliance blockers
+### `qa-audit-agent`
 
-### 6. `qa-audit-agent`
 Responsibilities:
-- perform independent consistency, defensibility, and quality audit
-- check cross-volume contradictions and unsupported claims
-- verify that the right role separation was maintained
 
-Must not:
-- become the primary drafter
-- waive material evidence or compliance defects on its own
+- perform independent consistency and defensibility checks
+- verify role separation and release readiness
 
-## Separation policy
+## Runtime storage model
 
-This architecture assumes that, on medium or large projects:
-- writing and checking are separate responsibilities
-- formatting is separate from substantive review
-- QA/audit is independent from the main drafting lane
-- manager owns gates and decisions, not raw chapter volume
+### Company Knowledge Vault
 
-Small projects may collapse some roles, but the manager must still state when separation was reduced and what risk remains.
+Location: `vault/`
 
-## Knowledge model
+Purpose:
 
-The system assumes an Obsidian-style vault:
+- permanent company-wide knowledge
+- credentials, cases, vendor docs, promoted reusable pages
 
-```text
-bid-vault/
-├── inbox/
-├── raw/
-├── wiki/
-├── output/
-└── logs/
-```
+### Project Workspace
 
-Meaning:
-- `inbox/` = current project input folders and project-only supplements
-- `raw/` = reusable source material bundles
-- `wiki/` = promoted reusable knowledge pages
-- `output/` = project-run execution artifacts
-- `logs/` = review, lint, and audit traces
+Location: `workspaces/<id>/`
+
+Purpose:
+
+- temporary project-centric documents
+- normalized current-project input
+- parse, mapping, review, and draft artifacts
+
+Structure:
+
+- `vault/raw/` = reusable source bundles
+- `vault/wiki/` = promoted reusable knowledge pages
+- `workspace/inbox/` = current project input
+- `workspace/output/` = current project run artifacts
+- `workspace/logs/` = review, lint, and audit traces
 
 Boundary:
-- current tender packages are project-run inputs
-- reusable bidder/vendor knowledge belongs in `raw/` and promoted `wiki/` pages
-- the tender package itself is not the default canonical long-term knowledge object
 
-## Document normalization layer
-
-Between raw current-project input and parsing, keep a lightweight normalization layer:
-- raw files remain under `bid-vault/inbox/projects/<project-id>/`
-- normalized Markdown-first bundles live under `bid-vault/output/project-runs/<project-id>/normalized/`
-- normalized output is for the current project run, not for automatic long-term promotion
-
-Preferred adapter:
-- `markitdown`
-
-Fallback adapters:
-- `pandoc` for DOCX compatibility and attachment extraction
-- `pdftotext` for simple PDF text fallback
-
-See also:
-- `docs/normalization-design.md`
+- current tender packages stay in `workspace/inbox/`
+- normalized bundles stay in `workspace/output/normalized/`
+- the tender package is not promoted to the vault by default
 
 ## Core product objects
 
 Minimum durable objects:
+
 - project input manifest
 - normalization manifest
 - parse skeleton
 - project-start sheet
 - package parse page
 - evidence gap report
-- score-point / chapter / evidence mapping page
+- mapping page
 - evidence pages
 - outline placeholders
 - chapter drafts
 - compliance review report
 - formatting checklist
 - QA/audit report
-- formal-delivery package checklist
 
 ## Manager state machine
 
-1. project folder intake
+1. workspace check
 2. startup intake
-3. workspace validation
-4. current project document normalization
-5. parse skeleton generation
-6. current tender parse
-7. reusable-knowledge retrieval
-8. evidence organization
-9. score-point / chapter / evidence mapping
-10. outline generation and confirmation
-11. drafting
-12. compliance review
-13. formatting
-14. QA/audit
-15. release and backflow
+3. normalization check
+4. parse skeleton check
+5. current tender parse
+6. reusable-knowledge retrieval
+7. evidence organization
+8. mapping
+9. outline generation and confirmation
+10. drafting
+11. compliance review
+12. formatting
+13. QA/audit
+14. release and backflow
 
 For V1, the default first milestone ends after:
+
 - normalization manifest
 - parse skeleton
 - package parse
@@ -186,11 +160,10 @@ For V1, the default first milestone ends after:
 - mapping page
 - outline placeholders
 
-Full drafting happens only after that milestone is reviewed.
-
 ## Gate rules
 
 The following gates are non-optional:
+
 - no multi-pack continuation before target pack confirmation
 - no substantial drafting before outline confirmation
 - no formal qualification statement without evidence
@@ -200,14 +173,3 @@ The following gates are non-optional:
 - no internal process notes in formal delivery
 - no mixing bidder capability and vendor capability
 - no treating the current tender package as default reusable knowledge
-
-## Why this is not just a writing workflow
-
-This system is designed for real tender production, not only language generation.
-It must manage:
-- current project input vs long-term knowledge boundaries
-- evidence assembly
-- evaluation alignment
-- rejection-risk control
-- separation of authoring and review
-- knowledge reuse across projects

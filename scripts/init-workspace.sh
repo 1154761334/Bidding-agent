@@ -1,35 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Initialize a project workspace.
+# A workspace is a lightweight drafting sandbox for one bid project.
+# It does NOT contain company knowledge — that lives in the vault.
+
 TARGET_DIR="${1:-$(pwd)}"
-VAULT_DIR="$TARGET_DIR/bid-vault"
 
 mkdir -p \
-  "$VAULT_DIR/00-Schema" \
-  "$VAULT_DIR/inbox/projects" \
-  "$VAULT_DIR/raw/historical-bids" \
-  "$VAULT_DIR/raw/company-credentials" \
-  "$VAULT_DIR/raw/vendor-solutions" \
-  "$VAULT_DIR/raw/attachments" \
-  "$VAULT_DIR/wiki/capabilities" \
-  "$VAULT_DIR/wiki/cases" \
-  "$VAULT_DIR/wiki/packs" \
-  "$VAULT_DIR/wiki/mappings" \
-  "$VAULT_DIR/wiki/templates" \
-  "$VAULT_DIR/wiki/evidence" \
-  "$VAULT_DIR/wiki/reports" \
-  "$VAULT_DIR/output/project-runs" \
-  "$VAULT_DIR/logs/lint-reports"
+  "$TARGET_DIR/inbox/tender" \
+  "$TARGET_DIR/inbox/addenda" \
+  "$TARGET_DIR/inbox/company-inputs" \
+  "$TARGET_DIR/inbox/vendor-inputs" \
+  "$TARGET_DIR/inbox/project-attachments" \
+  "$TARGET_DIR/inbox/notes" \
+  "$TARGET_DIR/output/normalized/tender" \
+  "$TARGET_DIR/output/normalized/addenda" \
+  "$TARGET_DIR/output/normalized/company-inputs" \
+  "$TARGET_DIR/output/normalized/vendor-inputs" \
+  "$TARGET_DIR/output/normalized/project-attachments" \
+  "$TARGET_DIR/output/normalized/notes" \
+  "$TARGET_DIR/output/evidence" \
+  "$TARGET_DIR/output/drafts" \
+  "$TARGET_DIR/output/reviews" \
+  "$TARGET_DIR/output/final" \
+  "$TARGET_DIR/logs/lint-reports"
 
-cat > "$VAULT_DIR/00-Schema/README.md" <<'EOF'
-# bid-vault schema
-
-This vault follows the product convention:
-- inbox = current project input folders
-- raw = immutable source materials
-- wiki = compiled reusable knowledge
-- output = project-run artifacts
-- logs = lint/review traces
-EOF
-
-printf 'Initialized workspace at %s\n' "$TARGET_DIR"
+printf 'Initialized project workspace at %s\n' "$TARGET_DIR"

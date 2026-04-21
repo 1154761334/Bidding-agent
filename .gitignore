@@ -4,11 +4,14 @@
 
 # Heavy local workspaces and raw materials (root-level only)
 /bid-vault/
+/vault/
+/workspaces/
 /artifacts/
 /docx-md-bundles/
 /docx-md-test/
 /ovp-bid-test-vault/
 /ovp-test-vault/
+/local-eval/
 /references/
 /notes/
 /docs/legacy-source-notes/

@@ -1,35 +1,31 @@
-# Workspace template
+# Workspace Template
 
-This directory provides the recommended starter layout for a Hermes-based bidding workspace.
+This directory documents the recommended flat project workspace layout.
 
-Use:
-
-```bash
-bash scripts/init-workspace.sh /path/to/project
-```
-
-For a current bid run, create a project input folder with:
+Primary entry:
 
 ```bash
-bash scripts/new-project-inbox.sh /path/to/project my-project-id
+bash scripts/start-bid-manager.sh /path/to/workspaces/my-project --dry-run
 ```
 
-Then initialize the working artifact skeleton with:
+The wrapper auto-creates the standard workspace and shared vault if they are missing.
+
+Recommended structure:
+
+```text
+/path/to/workspaces/my-project/
+├── inbox/
+├── output/
+└── logs/
+```
+
+Current project files go into `inbox/`.
+Project-run artifacts stay in `output/`.
+
+Manual helpers remain available for advanced or compatibility use:
 
 ```bash
-bash scripts/init-project-run.sh /path/to/project my-project-id
+bash scripts/normalize-project-inputs.sh /path/to/workspaces/my-project
+bash scripts/generate-parse-skeleton.sh /path/to/workspaces/my-project
+bash scripts/validate-project-run.sh /path/to/workspaces/my-project
 ```
-
-Then normalize the current project files into the project-run workspace with:
-
-```bash
-bash scripts/normalize-project-inputs.sh /path/to/project my-project-id
-```
-
-Then prefill the tender parse scaffold with:
-
-```bash
-bash scripts/generate-parse-skeleton.sh /path/to/project my-project-id
-```
-
-Or copy the `bid-vault/` structure manually.

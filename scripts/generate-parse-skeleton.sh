@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ "$#" -lt 2 ]; then
-  echo 'Usage: bash scripts/generate-parse-skeleton.sh <workspace-dir> <project-id>' >&2
+if [ "$#" -lt 1 ]; then
+  echo 'Usage: bash scripts/generate-parse-skeleton.sh <workspace-dir>' >&2
   exit 1
 fi
 
 WORKSPACE_DIR="$1"
-PROJECT_ID="$2"
-PROJECT_INPUT_DIR="$WORKSPACE_DIR/bid-vault/inbox/projects/$PROJECT_ID"
-RUN_DIR="$WORKSPACE_DIR/bid-vault/output/project-runs/$PROJECT_ID"
+PROJECT_INPUT_DIR="$WORKSPACE_DIR/inbox"
+RUN_DIR="$WORKSPACE_DIR/output"
 NORMALIZED_DIR="$RUN_DIR/normalized"
 MANIFEST_PATH="$RUN_DIR/00-NORMALIZATION-MANIFEST.md"
 INDEX_PATH="$NORMALIZED_DIR/normalization-index.tsv"
@@ -18,27 +17,30 @@ PARSE_INPUT_INDEX_PATH="$RUN_DIR/parse-input-index.tsv"
 FORMAL_PARSE_PATH="$RUN_DIR/02-TENDER-PARSE.md"
 TARGET_STATUS='existing parse preserved'
 
+# Extract project ID from workspace basename if possible
+PROJECT_ID=$(basename "$WORKSPACE_DIR")
+
 if [ ! -d "$PROJECT_INPUT_DIR" ]; then
   echo "Project input folder not found: $PROJECT_INPUT_DIR" >&2
-  echo 'Run bash scripts/new-project-inbox.sh <workspace-dir> <project-id> first.' >&2
+  echo "Run bash scripts/start-bid-manager.sh $WORKSPACE_DIR --dry-run once, or bootstrap the workspace manually." >&2
   exit 1
 fi
 
 if [ ! -d "$RUN_DIR" ]; then
-  echo "Project run folder not found: $RUN_DIR" >&2
-  echo 'Run bash scripts/init-project-run.sh <workspace-dir> <project-id> first.' >&2
+  echo "Project output folder not found: $RUN_DIR" >&2
+  echo "Run bash scripts/start-bid-manager.sh $WORKSPACE_DIR --dry-run once, or bootstrap the workspace manually." >&2
   exit 1
 fi
 
 if [ ! -f "$MANIFEST_PATH" ]; then
   echo "Normalization manifest not found: $MANIFEST_PATH" >&2
-  echo 'Run bash scripts/init-project-run.sh <workspace-dir> <project-id> first.' >&2
+  echo "Run bash scripts/start-bid-manager.sh $WORKSPACE_DIR --dry-run once, or bootstrap the workspace manually." >&2
   exit 1
 fi
 
 if [ ! -f "$INDEX_PATH" ]; then
   echo "Normalization index not found: $INDEX_PATH" >&2
-  echo 'Run bash scripts/normalize-project-inputs.sh <workspace-dir> <project-id> first.' >&2
+  echo 'Run bash scripts/normalize-project-inputs.sh <workspace-dir> first.' >&2
   exit 1
 fi
 

@@ -106,7 +106,9 @@ Default stack layout:
 /root/bid-stack/
 ├── Bidding-agent/
 ├── obsidian_vault_pipeline/
+├── vault/
 └── workspaces/
+    └── <project-id>/
 ```
 
 Constraints:

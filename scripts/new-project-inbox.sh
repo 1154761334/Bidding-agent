@@ -1,38 +1,33 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ "$#" -lt 2 ]; then
-  echo 'Usage: bash scripts/new-project-inbox.sh <workspace-dir> <project-id>' >&2
+# This script is now a thin wrapper around bootstrap-stack.sh.
+# Kept for backward compatibility.
+
+if [ "$#" -lt 1 ]; then
+  echo 'Usage: bash scripts/new-project-inbox.sh <workspace-dir>' >&2
   exit 1
 fi
 
 WORKSPACE_DIR="$1"
-PROJECT_ID="$2"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TEMPLATE_PATH="$SCRIPT_DIR/../templates/project-input-manifest.md"
-PROJECT_DIR="$WORKSPACE_DIR/bid-vault/inbox/projects/$PROJECT_ID"
-
-if [ ! -d "$WORKSPACE_DIR/bid-vault" ]; then
-  echo "Workspace not initialized: $WORKSPACE_DIR/bid-vault" >&2
-  echo 'Run bash scripts/init-workspace.sh <workspace-dir> first.' >&2
-  exit 1
-fi
 
 mkdir -p \
-  "$PROJECT_DIR/tender" \
-  "$PROJECT_DIR/addenda" \
-  "$PROJECT_DIR/company-inputs" \
-  "$PROJECT_DIR/vendor-inputs" \
-  "$PROJECT_DIR/project-attachments" \
-  "$PROJECT_DIR/notes"
+  "$WORKSPACE_DIR/inbox/tender" \
+  "$WORKSPACE_DIR/inbox/addenda" \
+  "$WORKSPACE_DIR/inbox/company-inputs" \
+  "$WORKSPACE_DIR/inbox/vendor-inputs" \
+  "$WORKSPACE_DIR/inbox/project-attachments" \
+  "$WORKSPACE_DIR/inbox/notes"
 
-if [ -f "$TEMPLATE_PATH" ] && [ ! -f "$PROJECT_DIR/PROJECT-INPUT.md" ]; then
-  cp "$TEMPLATE_PATH" "$PROJECT_DIR/PROJECT-INPUT.md"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TEMPLATE_PATH="$SCRIPT_DIR/../templates/project-input-manifest.md"
+
+if [ -f "$TEMPLATE_PATH" ] && [ ! -f "$WORKSPACE_DIR/inbox/PROJECT-INPUT.md" ]; then
+  cp "$TEMPLATE_PATH" "$WORKSPACE_DIR/inbox/PROJECT-INPUT.md"
 fi
 
-printf 'Created project input folder at %s\n' "$PROJECT_DIR"
-printf 'Place the tender package under %s/tender/\n' "$PROJECT_DIR"
-printf 'Place addenda and clarifications under %s/addenda/\n' "$PROJECT_DIR"
-printf 'Place project-specific bidder material under %s/company-inputs/\n' "$PROJECT_DIR"
-printf 'Place project-specific vendor material under %s/vendor-inputs/\n' "$PROJECT_DIR"
-printf 'Place project-only attachments under %s/project-attachments/\n' "$PROJECT_DIR"
+printf 'Project inbox ready at %s/inbox/\n' "$WORKSPACE_DIR"
+printf 'Place tender:   %s/inbox/tender/\n' "$WORKSPACE_DIR"
+printf 'Place addenda:  %s/inbox/addenda/\n' "$WORKSPACE_DIR"
+printf 'Place vendor:   %s/inbox/vendor-inputs/\n' "$WORKSPACE_DIR"
+printf 'Compatibility helper only. Primary user entry: bash scripts/start-bid-manager.sh %s [--one-shot]\n' "$WORKSPACE_DIR"

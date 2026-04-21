@@ -6,9 +6,9 @@
 - 若标准化失败或文本质量不足，应在此明确记录，不得跳过风险提示。
 
 ## 标准化输出位置
-- 项目运行目录：`bid-vault/output/project-runs/<project-id>/`
-- 标准化产物目录：`bid-vault/output/project-runs/<project-id>/normalized/`
-- 机器索引文件：`bid-vault/output/project-runs/<project-id>/normalized/normalization-index.tsv`
+- 项目工作区根目录：`<workspace-dir>/`
+- 标准化产物目录：`<workspace-dir>/output/normalized/`
+- 机器索引文件：`<workspace-dir>/output/normalized/normalization-index.tsv`
 
 ## 清单
 
@@ -23,5 +23,5 @@
 ## 使用规则
 1. 优先使用 `markitdown` 进行 Word/PDF/Excel/PPT 等文件的 Markdown 标准化。
 2. `pandoc` 和 `pdftotext` 只作为兼容性 fallback，不构成单独架构层。
-3. 原始文件始终保留在 `bid-vault/inbox/projects/<project-id>/`，标准化产物只放在项目运行目录。
+3. 原始文件始终保留在 `<workspace-dir>/inbox/`，标准化产物只放在项目运行目录。
 4. 当前项目招标文件的标准化结果不能自动进入长期知识库。

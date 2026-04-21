@@ -1,283 +1,181 @@
-# Setup stack: Hermes + OVP + optional Obsidian
+# Setup Stack
 
-This document explains the intended product stack for this repository.
+This document describes the intended local stack for this repository.
 
-The practical setup is:
-1. Hermes = runtime and orchestration
-2. OVP (`obsidian_vault_pipeline`) = knowledge-layer engine
-3. Obsidian = optional human-facing vault viewer/editor
+## Stack components
 
-## 1. Architecture decision
+1. Hermes
+   - runtime and orchestration
+   - runs `bid-manager`
+2. OVP (`obsidian_vault_pipeline`)
+   - knowledge-layer engine
+   - manages reusable company knowledge in `vault/`
+3. Obsidian
+   - optional human-facing viewer/editor for the vault
 
-Recommended architecture:
+## Architecture decision
+
+Recommended structure:
+
 - keep `Bidding-agent` and `obsidian_vault_pipeline` as sibling repositories
-- use `bid-manager` as the single workflow entrypoint
-- let OVP remain the knowledge-layer engine
-- treat Obsidian as optional inspection/editing UI, not a startup blocker
+- keep one shared `vault/`
+- keep one workspace per project under `workspaces/<project-id>/`
+- keep `bid-manager` as the only formal user-facing entrypoint
 
-This means:
-- Hermes runs the bidding workflow
-- OVP manages compiled vault knowledge
-- Obsidian is used only when a human wants to inspect the vault visually
-- current tender packages stay in project input folders unless promoted later
+## Recommended local layout
 
-## 2. What users actually need to pull
+```text
+/root/bid-stack/
+├── Bidding-agent/
+├── obsidian_vault_pipeline/
+├── vault/
+└── workspaces/
+    └── <project-id>/
+        ├── inbox/
+        ├── output/
+        └── logs/
+```
 
-The normal user setup is not "install everything from zero every time".
-The standard stack is:
+## Installation sequence
+
+### 1. Clone the repos
 
 ```bash
 git clone <your-bidding-agent-repo-url> /root/bid-stack/Bidding-agent
 git clone https://github.com/1154761334/obsidian_vault_pipeline.git /root/bid-stack/obsidian_vault_pipeline
 ```
 
-If Hermes, OVP, or Obsidian are already installed and working, do not reinstall them just because a new bid project starts.
-
-## 3. Required components
-
-### A. Hermes
-Purpose:
-- run `bid-manager`
-- coordinate internal execution roles
-- keep the workflow centered on one manager-facing conversation
-
-Install once if needed:
+### 2. Install Hermes if needed
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
 hermes doctor
 ```
 
-### B. OVP
-Purpose:
-- maintain the vault knowledge layer
-- provide `.env`-driven model access and vault tooling
-- support reusable knowledge promotion outside the immediate project run
+### 3. Install optional helpers if needed
 
-Recommended source:
-- development fork: `https://github.com/1154761334/obsidian_vault_pipeline`
-
-Recommended install:
+OVP:
 
 ```bash
 cd /root/bid-stack/Bidding-agent
 bash scripts/install-ovp.sh local
 ```
 
-The helper retries with `--break-system-packages` automatically if plain `pip install --user` is blocked.
-
-### C. Obsidian
-Purpose:
-- open and inspect the vault locally
-- review `inbox / raw / wiki / output / logs`
-
-Notes:
-- optional for CLI-only runtime
-- useful, but not required to start the manager workflow
-
-Install manually from `https://obsidian.md/` if you want the desktop viewer.
-
-### D. markitdown
-Purpose:
-- normalize Word/PDF/Excel/PPT into Markdown-first working copies
-- provide one preferred adapter for current-project input standardization
-
-Recommended install:
+Preferred normalizer:
 
 ```bash
 cd /root/bid-stack/Bidding-agent
 bash scripts/install-markitdown.sh venv
 ```
 
-## 4. OVP environment requirement
-
-Important behavior from prior testing:
-- `ovp --check --vault-dir <vault>` expects a `.env` in the vault root
-- do not assume a global shell environment alone is enough
-
-Typical `.env` values are provider/model-related, for example:
-- `AUTO_VAULT_API_KEY`
-- `AUTO_VAULT_API_BASE`
-- `AUTO_VAULT_MODEL`
-
-The exact field names come from OVP, not Hermes.
-
-## 5. Recommended installation sequence
-
-### Step 1: verify local prerequisites
+### 4. Verify prerequisites
 
 ```bash
 cd /root/bid-stack/Bidding-agent
 bash scripts/check-prereqs.sh
 ```
 
-### Step 2: bootstrap the workspace
+## Single-entry startup
+
+Use the manager wrapper as the main startup path. It auto-creates the workspace skeleton and shared vault if they do not exist.
+
+Preview and initialize:
 
 ```bash
 cd /root/bid-stack/Bidding-agent
-bash scripts/bootstrap-stack.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
+bash scripts/start-bid-manager.sh /root/bid-stack/workspaces/ctzb-2023110453 --dry-run
 ```
 
-This does four things:
-- initializes the standard workspace layout
-- creates the current project input folder
-- creates the project-run working folder under `bid-vault/output/project-runs/<project-id>/`
-- copies `templates/ovp-vault.env.example` into the vault root if `.env` is missing
-
-### Step 3: install the preferred normalizer
+Launch and inject the kickoff prompt automatically:
 
 ```bash
 cd /root/bid-stack/Bidding-agent
-bash scripts/install-markitdown.sh venv
+bash scripts/start-bid-manager.sh /root/bid-stack/workspaces/ctzb-2023110453 --one-shot
 ```
 
-If you prefer a local editable clone:
+Interactive launch:
 
 ```bash
-bash scripts/install-markitdown.sh venv-clone
+cd /root/bid-stack/Bidding-agent
+bash scripts/start-bid-manager.sh /root/bid-stack/workspaces/ctzb-2023110453
 ```
 
-### Step 4: fill the project materials
+## Data placement
 
-Place files under:
+Current project input goes into the workspace:
 
 ```text
-bid-vault/inbox/projects/ctzb-2023110453/
+workspaces/<project-id>/inbox/
 ├── PROJECT-INPUT.md
 ├── tender/
 ├── addenda/
 ├── company-inputs/
-├── project-attachments/
 ├── vendor-inputs/
+├── project-attachments/
 └── notes/
 ```
 
-### Step 5: normalize current project files
-
-```bash
-cd /root/bid-stack/Bidding-agent
-bash scripts/normalize-project-inputs.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
-```
-
-### Step 6: generate the parse skeleton
-
-```bash
-cd /root/bid-stack/Bidding-agent
-bash scripts/generate-parse-skeleton.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
-```
-
-### Step 7: start the manager
-
-Recommended helper:
-
-```bash
-cd /root/bid-stack/Bidding-agent
-bash scripts/start-bid-manager.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
-```
-
-Prompt preview without launching Hermes:
-
-```bash
-bash scripts/start-bid-manager.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453 --dry-run
-```
-
-If you want a one-shot initialization query:
-
-```bash
-bash scripts/start-bid-manager.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453 --one-shot
-```
-
-## 6. How data enters the system
-
-Separate current project input from reusable knowledge assets.
-
-### Current project input
-
-Create a project folder under:
+Reusable knowledge stays in the vault:
 
 ```text
-bid-vault/inbox/projects/<project-id>/
+vault/raw/
+├── historical-bids/
+├── company-credentials/
+├── vendor-solutions/
+└── attachments/
 ```
 
-Recommended layout:
+Promoted reusable pages stay under:
 
 ```text
-bid-vault/inbox/projects/<project-id>/
-├── PROJECT-INPUT.md
-├── tender/
-├── addenda/
-├── company-inputs/
-├── project-attachments/
-├── vendor-inputs/
-└── notes/
+vault/wiki/
 ```
 
-The current tender package belongs here.
-It is parsed for the current run, but not treated as default long-term reusable knowledge.
-
-### Reusable knowledge assets
-
-Historical bids:
+Project-run artifacts stay in:
 
 ```text
-bid-vault/raw/historical-bids/
+workspaces/<project-id>/output/
+├── 00-NORMALIZATION-MANIFEST.md
+├── 01-PROJECT-START.md
+├── 02-TENDER-PARSE.md
+├── 02-TENDER-PARSE.generated.md
+├── 03-EVIDENCE-GAPS.md
+├── 04-SCORE-CHAPTER-EVIDENCE-MAPPING.md
+├── 05-OUTLINE.md
+├── 06-REVIEW-CHECKLIST.md
+├── PROGRESS.json
+├── PROGRESS.md
+├── normalized/
+├── evidence/
+├── drafts/
+├── reviews/
+└── final/
 ```
 
-Company credentials:
+## Manual helpers
 
-```text
-bid-vault/raw/company-credentials/
-```
-
-Vendor/original-manufacturer materials:
-
-```text
-bid-vault/raw/vendor-solutions/
-```
-
-### Lightweight helper recommendation
-
-For full project normalization, prefer:
+The scripts below remain available for deterministic local work, but they are not the recommended top-level entry:
 
 ```bash
-bash scripts/normalize-project-inputs.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
+bash scripts/normalize-project-inputs.sh /root/bid-stack/workspaces/ctzb-2023110453
+bash scripts/generate-parse-skeleton.sh /root/bid-stack/workspaces/ctzb-2023110453
+bash scripts/validate-project-run.sh /root/bid-stack/workspaces/ctzb-2023110453
 ```
 
-Then prefill the tender parse skeleton with:
+Single-file helper:
 
 ```bash
-bash scripts/generate-parse-skeleton.sh /root/bid-stack/workspaces/my-bid-project ctzb-2023110453
-```
-
-For one-off files:
-
-```bash
-bash scripts/normalize-document.sh input.docx /root/bid-stack/workspaces/my-bid-project/doc-normalized tender
+bash scripts/normalize-document.sh input.docx /root/bid-stack/workspaces/ctzb-2023110453/output/normalized/manual/input-docx tender
 ```
 
 Fallback helpers:
 
 ```bash
-bash scripts/convert-docx.sh input.docx /root/bid-stack/workspaces/my-bid-project/docx-bundle
-bash scripts/extract-pdf-text.sh input.pdf /root/bid-stack/workspaces/my-bid-project/pdf-text/input.txt
+bash scripts/convert-docx.sh input.docx /tmp/docx-bundle
+bash scripts/extract-pdf-text.sh input.pdf /tmp/input.txt
 ```
 
-## 7. How users should think about the product
+## OVP environment note
 
-Recommended framing:
-- Hermes = runtime and orchestration
-- `bid-manager` = user-facing product entry
-- OVP = knowledge-layer engine
-- Obsidian = optional vault viewer
-- helper scripts = workspace bootstrap and startup convenience
-
-The user interacts with one bid manager.
-Internally, the manager may dispatch evidence, drafting, compliance, formatting, and QA roles when complexity justifies it.
-
-## 8. Known limitations right now
-
-- the project input model is convention-driven rather than enforced by a full custom bridge
-- document normalization is helper-driven rather than backed by a dedicated ingestion service
-- generated parse skeletons remain scaffolds and do not replace manual review
-- reusable knowledge promotion is still guided by templates and skill rules, not a dedicated bid pack
-- complex binary-document handling is intentionally lightweight in this version
+OVP expects a `.env` in the vault root.
+`scripts/init-vault.sh` seeds `vault/.env` from `templates/ovp-vault.env.example` if needed.
